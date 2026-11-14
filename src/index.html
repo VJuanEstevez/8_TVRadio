@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="AIRE: consola de emisión para escuchar la radio en directo (COPE, Cadena SER, Onda Cero, LOS 40 y RockFM) y ver televisión (La 1, La 2 y Teledeporte)."
+    />
+    <meta name="theme-color" content="#0d0f14" />
+    <title>AIRE — Radio y TV en directo</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0f14'/%3E%3Ccircle cx='16' cy='14' r='3' fill='%23d13438'/%3E%3Cpath d='M9 20a10 10 0 0 1 0-12M23 8a10 10 0 0 1 0 12' stroke='%234f7dff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 17v9M11 26h10' stroke='%23e8ecf4' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./css/tokens.css" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Saltar al contenido</a>
+
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand__beacon" aria-hidden="true"></span>
+        <div class="brand__text">
+          <h1 class="brand__name">AIRE</h1>
+          <p class="brand__tagline">Consola de emisión · directo nacional</p>
+        </div>
+      </div>
+      <div class="site-header__status">
+        <p class="on-air" id="on-air" data-status="idle">
+          <span class="on-air__dot" aria-hidden="true"></span>
+          <span class="on-air__label" id="on-air-label">Sin emisión seleccionada</span>
+        </p>
+        <time class="clock" id="clock" aria-hidden="true">--:--:--</time>
+      </div>
+    </header>
+
+    <nav class="site-nav" aria-label="Secciones de la consola">
+      <div class="tablist" role="tablist" aria-label="Radio y televisión">
+        <button class="tab" type="button" role="tab" id="tab-radio" aria-controls="panel-radio" aria-selected="true">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="8.5" r="2.1" fill="currentColor" />
+            <path
+              d="M8.6 11.9a4.8 4.8 0 0 1 0-6.8M15.4 5.1a4.8 4.8 0 0 1 0 6.8M6 14.5a8.4 8.4 0 0 1 0-12M18 2.5a8.4 8.4 0 0 1 0 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            />
+            <path d="M12 10.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+          </svg>
+          Radio
+        </button>
+        <button
+          class="tab"
+          type="button"
+          role="tab"
+          id="tab-tv"
+          aria-controls="panel-tv"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="3" y="7" width="18" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="m8.5 2.8 3.5 4.2 3.5-4.2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M7.5 15.2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          TV
+        </button>
+      </div>
+    </nav>
+
+    <main class="site-main" id="main-content" tabindex="-1">
+      <section class="panel" id="panel-radio" role="tabpanel" aria-labelledby="tab-radio">
+        <header class="panel__header">
+          <h2 class="panel__title">Radio en directo</h2>
+          <p class="panel__lead">Cinco emisoras nacionales · stream oficial de cada cadena</p>
+        </header>
+        <ul class="station-grid" id="station-grid"></ul>
+        <noscript>
+          <p class="panel__lead">Activa JavaScript para poder reproducir las emisoras en directo.</p>
+        </noscript>
+      </section>
+
+      <section class="panel" id="panel-tv" role="tabpanel" aria-labelledby="tab-tv" hidden>
+        <header class="panel__header">
+          <h2 class="panel__title">Televisión en directo</h2>
+          <p class="panel__lead">Canales RTVE · HLS adaptativo hasta 720p</p>
+        </header>
+
+        <div class="tv-desk">
+          <div class="video-stage" id="video-stage">
+            <div class="video-stage__placeholder" id="video-placeholder">
+              <svg
+                class="icon icon--antenna"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <circle cx="12" cy="9" r="2.4" fill="currentColor" />
+                <path
+                  d="M8.2 12.8a5.4 5.4 0 0 1 0-7.6M15.8 5.2a5.4 5.4 0 0 1 0 7.6M5.4 15.6a9.4 9.4 0 0 1 0-13.2M18.6 2.4a9.4 9.4 0 0 1 0 13.2"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+                <path d="M12 11.6V22M8.5 22h7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              </svg>
+              <p>Elige un canal para ver el directo</p>
+            </div>
+
+            <div class="video-stage__overlay" id="video-overlay" hidden>
+              <span class="video-stage__channel" id="video-channel-name"></span>
+              <span class="live-badge" id="video-state">
+                <span class="live-badge__dot" aria-hidden="true"></span><span data-state-text>EN DIRECTO</span>
+              </span>
+            </div>
+
+            <div class="video-controls" id="video-controls">
+              <button class="icon-button" type="button" id="video-toggle">
+                <svg class="icon icon--play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M8 5.13v13.74a1 1 0 0 0 1.52.85l10.77-6.87a1 1 0 0 0 0-1.7L9.52 4.28A1 1 0 0 0 8 5.13Z" fill="currentColor" />
+                </svg>
+                <svg class="icon icon--pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+                  <rect x="7" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+                  <rect x="13.6" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+                </svg>
+                <span class="visually-hidden" data-toggle-label>Reproducir</span>
+              </button>
+
+              <button class="icon-button" type="button" id="video-mute">
+                <svg class="icon icon--volume" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" fill="currentColor" />
+                  <path d="M14.8 9.3a4 4 0 0 1 0 5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M17.5 6.8a7.5 7.5 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                <svg class="icon icon--muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+                  <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" fill="currentColor" />
+                  <path d="m15 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                <span class="visually-hidden" data-mute-label>Silenciar</span>
+              </button>
+
+              <label class="visually-hidden" for="video-volume">Volumen del vídeo</label>
+              <input class="volume-slider" type="range" id="video-volume" min="0" max="100" step="1" value="80" />
+
+              <button class="icon-button" type="button" id="video-pip" hidden>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="3.5" y="5.5" width="17" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
+                  <rect x="12" y="11.5" width="6" height="5" rx="1" fill="currentColor" />
+                </svg>
+                <span class="visually-hidden">Ver en ventana flotante</span>
+              </button>
+
+              <button class="icon-button" type="button" id="video-fullscreen">
+                <svg class="icon icon--fullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <svg
+                  class="icon icon--fullscreenExit"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                  hidden
+                >
+                  <path
+                    d="M9 4v3.5A1.5 1.5 0 0 1 7.5 9H4M15 4v3.5a1.5 1.5 0 0 0 1.5 1.5H20M9 20v-3.5A1.5 1.5 0 0 0 7.5 15H4M15 20v-3.5a1.5 1.5 0 0 1 1.5-1.5H20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <span class="visually-hidden" data-fs-label>Pantalla completa</span>
+              </button>
+
+              <span class="video-controls__quality" id="video-quality">HLS</span>
+            </div>
+          </div>
+
+          <ul class="channel-list" id="channel-list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p class="site-footer__brand">AIRE · consola de emisión</p>
+      <p>
+        Streams oficiales de COPE, Cadena SER, Onda Cero, LOS 40, RockFM y RTVE. Contenido con derechos de sus emisoras:
+        uso personal.
+      </p>
+    </footer>
+
+    <aside class="mini-player" id="mini-player" hidden aria-label="Reproductor en curso">
+      <div class="mini-player__inner">
+        <span class="mini-player__logo" id="mini-logo" aria-hidden="true"></span>
+        <div class="mini-player__text">
+          <p class="mini-player__title" id="mini-title"></p>
+          <p class="mini-player__subtitle" id="mini-subtitle"></p>
+        </div>
+        <span class="live-badge mini-player__state" id="mini-state"></span>
+        <span class="mini-player__spacer"></span>
+        <span class="equalizer mini-player__equalizer" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </span>
+
+        <div class="mini-player__controls">
+          <button class="icon-button" type="button" id="mini-toggle">
+            <svg class="icon icon--play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+              <path d="M8 5.13v13.74a1 1 0 0 0 1.52.85l10.77-6.87a1 1 0 0 0 0-1.7L9.52 4.28A1 1 0 0 0 8 5.13Z" fill="currentColor" />
+            </svg>
+            <svg class="icon icon--pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="7" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+              <rect x="13.6" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+            </svg>
+            <span class="visually-hidden" data-toggle-label>Pausar</span>
+          </button>
+
+          <button class="icon-button" type="button" id="mini-mute" aria-pressed="false">
+            <svg class="icon icon--volume" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" fill="currentColor" />
+              <path d="M14.8 9.3a4 4 0 0 1 0 5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M17.5 6.8a7.5 7.5 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+            <svg class="icon icon--muted" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden>
+              <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" fill="currentColor" />
+              <path d="m15 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+            <span class="visually-hidden" data-mute-label>Silenciar</span>
+          </button>
+
+          <label class="visually-hidden" for="mini-volume">Volumen</label>
+          <input class="volume-slider" type="range" id="mini-volume" min="0" max="100" step="1" value="80" />
+
+          <button class="icon-button" type="button" id="mini-stop">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="6.5" y="6.5" width="11" height="11" rx="1.6" fill="currentColor" />
+            </svg>
+            <span class="visually-hidden">Detener</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <p class="visually-hidden" role="status" id="announcer"></p>
+  </body>
+</html>

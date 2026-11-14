@@ -1,0 +1,209 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--page-inline);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand__beacon {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 45%, transparent) 0 28%, transparent 30%),
+    var(--bg-raised);
+}
+
+.brand__beacon::after {
+  content: '';
+  position: absolute;
+  inset: 0.4rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  animation: beacon-ping 2.4s var(--ease) infinite;
+}
+
+.brand__name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.brand__tagline {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.site-header__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.on-air {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.on-air__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+
+.on-air[data-status='loading'] .on-air__dot {
+  background: #f5a300;
+  animation: beacon-blink 1s steps(2, jump-none) infinite;
+}
+
+.on-air[data-status='playing'] .on-air__dot {
+  background: var(--live);
+  animation: beacon-pulse 1.6s var(--ease) infinite;
+}
+
+.on-air[data-status='error'] .on-air__dot {
+  background: var(--live);
+}
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.site-nav {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) var(--page-inline) 0;
+}
+
+.site-main {
+  width: min(calc(100% - 2 * var(--page-inline)), var(--container));
+  margin-inline: auto;
+  padding-block: clamp(1.5rem, 4vw, 2.75rem);
+}
+
+.panel__header {
+  margin-bottom: var(--space-5);
+}
+
+.panel__title {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.panel__lead {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+}
+
+.tv-desk {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.channel-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.site-footer {
+  width: min(calc(100% - 2 * var(--page-inline)), var(--container));
+  margin-inline: auto;
+  padding-block: var(--space-6) calc(var(--space-6) + 1rem);
+  border-top: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.site-footer__brand {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mini-player {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-player);
+}
+
+.mini-player[hidden] {
+  display: none;
+}
+
+.mini-player__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(calc(100% - 2 * var(--page-inline)), var(--container));
+  min-height: var(--miniplayer-height);
+  margin-inline: auto;
+  padding-block: var(--space-3);
+}
+
+.mini-player__spacer {
+  flex: 1;
+}
+
+body:has(.mini-player:not([hidden])) {
+  padding-bottom: calc(var(--miniplayer-height) + 1.5rem);
+}
+
+@media (min-width: 60rem) {
+  .tv-desk {
+    grid-template-columns: minmax(0, 1fr) 19rem;
+  }
+}
+
+@media (max-width: 36rem) {
+  .mini-player__equalizer,
+  .mini-player__subtitle {
+    display: none;
+  }
+
+  .volume-slider {
+    max-width: 5rem;
+  }
+}
