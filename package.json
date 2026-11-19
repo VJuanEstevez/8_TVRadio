@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint src/",
-    "format": "oxfmt src/"
+    "format": "oxfmt src/",
+    "deploy": "pnpm run build && gh-pages -d dist"
   },
   "keywords": [],
   "author": "",
