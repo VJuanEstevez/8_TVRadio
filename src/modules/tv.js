@@ -3,8 +3,9 @@ import { equalizerMarkup, announce } from './utils.js';
 
 function channelCardMarkup(channel) {
   const style = `--logo-bg:${channel.logoBg};--logo-ink:${channel.logoInk};--station-accent:${channel.accent}`;
+  const search = [channel.name, channel.network, channel.id].join(' ').toLowerCase();
   return `
-    <li class="channel-card" data-channel-id="${channel.id}" style="${style}">
+    <li class="channel-card" data-channel-id="${channel.id}" data-search="${search}" style="${style}">
       <button class="channel-card__button" type="button" aria-pressed="false">
         <span class="channel-card__logo" data-brand="${channel.id}">${channel.logoText}</span>
         <span class="channel-card__body">
@@ -27,6 +28,7 @@ export function initTvView({ engine, onSelect }) {
   stage.prepend(engine.video);
 
   list.innerHTML = TV_CHANNELS.map(channelCardMarkup).join('');
+  const cards = Array.from(list.querySelectorAll('.channel-card'));
 
   list.addEventListener('click', (event) => {
     const button = event.target.closest('.channel-card__button');
@@ -37,6 +39,7 @@ export function initTvView({ engine, onSelect }) {
   });
 
   const toggleButton = document.querySelector('#video-toggle');
+  const stopButton = document.querySelector('#video-stop');
   const muteButton = document.querySelector('#video-mute');
   const volumeSlider = document.querySelector('#video-volume');
   const fullscreenButton = document.querySelector('#video-fullscreen');
@@ -55,6 +58,12 @@ export function initTvView({ engine, onSelect }) {
       return;
     }
     engine.toggle();
+  });
+
+  stopButton.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
+    engine.stop();
   });
 
   muteButton.addEventListener('click', () => engine.setMuted(!engine.getSnapshot().muted));
@@ -102,10 +111,10 @@ export function initTvView({ engine, onSelect }) {
       : 'Pantalla completa';
   });
 
-  return function updateTvView({ current, state, levelHeight, volume, muted }) {
+  function update({ current, state, levelHeight, volume, muted }) {
     const activeId = current?.kind === 'tv' ? current.id : null;
 
-    for (const card of list.querySelectorAll('.channel-card')) {
+    for (const card of cards) {
       const isActive = card.dataset.channelId === activeId;
       const isPlaying = isActive && state === 'playing';
       const isLoading = isActive && state === 'loading';
@@ -175,5 +184,14 @@ export function initTvView({ engine, onSelect }) {
     if (document.activeElement !== volumeSlider) volumeSlider.value = percent;
     volumeSlider.setAttribute('aria-valuetext', `${percent} por ciento`);
     volumeSlider.style.setProperty('--value', `${percent}%`);
-  };
+  }
+
+  function filter(query) {
+    const normalized = query.trim().toLowerCase();
+    for (const card of cards) {
+      card.hidden = Boolean(normalized) && !card.dataset.search.includes(normalized);
+    }
+  }
+
+  return { update, filter };
 }

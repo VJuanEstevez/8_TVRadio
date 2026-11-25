@@ -2,7 +2,8 @@ import { findStation, findChannel } from './streams.js';
 import { createMediaEngine } from './media-engine.js';
 import { initRadioView } from './radio.js';
 import { initTvView } from './tv.js';
-import { initMiniPlayer } from './mini-player.js';
+import { initRadioPlayer } from './radio-player.js';
+import { initSearch } from './search.js';
 import { announce, loadStoredState, saveStoredState } from './utils.js';
 
 const DEFAULT_STATE = {
@@ -16,7 +17,7 @@ const DEFAULT_STATE = {
 function initTabs(onChange) {
   const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
 
-  function activate(tab, { focus = true } = {}) {
+  function apply(tab, { focus }) {
     for (const candidate of tabs) {
       const isSelected = candidate === tab;
       candidate.setAttribute('aria-selected', String(isSelected));
@@ -25,6 +26,20 @@ function initTabs(onChange) {
     }
     if (focus) tab.focus();
     onChange(tab.id.replace('tab-', ''));
+  }
+
+  function activate(tab, { focus = true, animate = true } = {}) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (animate && document.startViewTransition && !reducedMotion) {
+      try {
+        document.startViewTransition(() => apply(tab, { focus: false }));
+        if (focus) tab.focus();
+        return;
+      } catch {
+        /* Fall through: the tab must switch even if the transition is unavailable. */
+      }
+    }
+    apply(tab, { focus });
   }
 
   for (const tab of tabs) {
@@ -50,22 +65,9 @@ function initTabs(onChange) {
   };
 }
 
-function initClock() {
-  const clock = document.querySelector('#clock');
-  const tick = () => {
-    const now = new Date();
-    clock.textContent = now.toLocaleTimeString('es-ES', { hour12: false });
-    clock.dateTime = now.toISOString();
-  };
-  tick();
-  window.setInterval(tick, 1000);
-}
-
 export function init() {
   const saved = { ...DEFAULT_STATE, ...(loadStoredState() ?? {}) };
   const root = document.documentElement;
-  const onAir = document.querySelector('#on-air');
-  const onAirLabel = document.querySelector('#on-air-label');
   const engine = createMediaEngine();
 
   engine.setVolume(saved.volume);
@@ -97,6 +99,44 @@ export function init() {
       : `${source.name}, televisión en directo`;
   }
 
+  const radioView = initRadioView({
+    onSelect(station) {
+      engine.load(toSource(station));
+    },
+  });
+
+  const tvView = initTvView({
+    engine,
+    onSelect(channel) {
+      engine.load(toSource(channel));
+    },
+  });
+
+  const updateRadioPlayer = initRadioPlayer({
+    engine,
+    onStop() {
+      engine.stop();
+    },
+  });
+
+  function toSource(item) {
+    const isRadio = 'frequency' in item;
+    return {
+      id: item.id,
+      kind: isRadio ? 'radio' : 'tv',
+      name: item.name,
+      subtitle: isRadio ? `${item.frequency} · ${item.city}` : item.network,
+      accent: item.accent,
+      logoText: item.logoText,
+      logoBg: item.logoBg,
+      logoInk: item.logoInk,
+      type: item.type,
+      stream: item.stream,
+      frequency: item.frequency,
+      city: item.city,
+    };
+  }
+
   function reactTo(snapshot) {
     const { current, state: playbackState, error } = snapshot;
 
@@ -106,21 +146,9 @@ export function init() {
       root.style.removeProperty('--accent');
     }
 
-    updateRadioView(snapshot);
-    updateTvView(snapshot);
-    updateMiniPlayer(snapshot);
-
-    const statusText = !current
-      ? 'Sin emisión seleccionada'
-      : playbackState === 'playing'
-        ? `En directo · ${current.name}`
-        : playbackState === 'loading'
-          ? `Conectando · ${current.name}`
-          : playbackState === 'error'
-            ? `Sin señal · ${current.name}`
-            : `En pausa · ${current.name}`;
-    onAirLabel.textContent = statusText;
-    onAir.dataset.status = !current ? 'idle' : playbackState;
+    radioView.update(snapshot);
+    tvView.update(snapshot);
+    updateRadioPlayer(snapshot);
 
     document.title =
       current && playbackState === 'playing'
@@ -150,49 +178,24 @@ export function init() {
     persist();
   }
 
-  const updateRadioView = initRadioView({
-    onSelect(station) {
-      engine.load(toSource(station));
-    },
-  });
-
-  const updateTvView = initTvView({
-    engine,
-    onSelect(channel) {
-      engine.load(toSource(channel));
-    },
-  });
-
-  const updateMiniPlayer = initMiniPlayer({
-    engine,
-    onStop() {
-      engine.stop();
-    },
-  });
-
-  function toSource(item) {
-    const isRadio = 'frequency' in item;
-    return {
-      id: item.id,
-      kind: isRadio ? 'radio' : 'tv',
-      name: item.name,
-      subtitle: isRadio ? `${item.frequency} · ${item.city}` : item.network,
-      accent: item.accent,
-      logoText: item.logoText,
-      logoBg: item.logoBg,
-      logoInk: item.logoInk,
-      type: item.type,
-      stream: item.stream,
-      frequency: item.frequency,
-      city: item.city,
-    };
-  }
-
   const tabs = initTabs((tabId) => {
     state.tab = tabId;
     persist();
   });
-  tabs.activateById(saved.tab, { focus: false });
+  tabs.activateById(saved.tab, { focus: false, animate: false });
+
+  let searchTimer = 0;
+  initSearch({
+    onQuery(query) {
+      radioView.filter(query);
+      tvView.filter(query);
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => {
+        const total = document.querySelectorAll('.station-card:not([hidden]), .channel-card:not([hidden])').length;
+        announce(query ? `${total} ${total === 1 ? 'resultado' : 'resultados'} para "${query}"` : 'Búsqueda borrada');
+      }, 450);
+    },
+  });
 
   engine.on(reactTo);
 
@@ -202,6 +205,4 @@ export function init() {
       : findChannel(saved.source.id)
     : null;
   if (restored) engine.load(toSource(restored), { autoplay: saved.wasPlaying });
-
-  initClock();
 }

@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--page-inline);
+  padding: var(--space-3) var(--page-inline);
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--bg) 84%, transparent);
   backdrop-filter: blur(12px);
@@ -17,6 +17,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex: none;
 }
 
 .brand__beacon {
@@ -45,65 +46,14 @@
   letter-spacing: 0.16em;
 }
 
-.brand__tagline {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.site-header__status {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.on-air {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0.4rem 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--bg-raised);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.on-air__dot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  background: var(--text-dim);
-}
-
-.on-air[data-status='loading'] .on-air__dot {
-  background: #f5a300;
-  animation: beacon-blink 1s steps(2, jump-none) infinite;
-}
-
-.on-air[data-status='playing'] .on-air__dot {
-  background: var(--live);
-  animation: beacon-pulse 1.6s var(--ease) infinite;
-}
-
-.on-air[data-status='error'] .on-air__dot {
-  background: var(--live);
-}
-
-.clock {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
-
 .site-nav {
   display: flex;
   justify-content: center;
-  padding: var(--space-4) var(--page-inline) 0;
+  flex: none;
+}
+
+.site-search {
+  flex: none;
 }
 
 .site-main {
@@ -125,6 +75,7 @@
   color: var(--text-muted);
 }
 
+.radio-desk,
 .tv-desk {
   display: grid;
   gap: var(--space-5);
@@ -132,12 +83,18 @@
   align-items: start;
 }
 
+.station-list,
 .channel-list {
   display: grid;
   gap: var(--space-3);
-  padding: 0;
+  max-height: min(60vh, 32rem);
+  padding: 0 var(--space-1) 0 0;
   margin: 0;
   list-style: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .site-footer {
@@ -157,52 +114,24 @@
   color: var(--text-muted);
 }
 
-.mini-player {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 40;
-  border-top: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-player);
-}
+@media (min-width: 48rem) {
+  .site-header {
+    flex-wrap: nowrap;
+  }
 
-.mini-player[hidden] {
-  display: none;
-}
-
-.mini-player__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  width: min(calc(100% - 2 * var(--page-inline)), var(--container));
-  min-height: var(--miniplayer-height);
-  margin-inline: auto;
-  padding-block: var(--space-3);
-}
-
-.mini-player__spacer {
-  flex: 1;
-}
-
-body:has(.mini-player:not([hidden])) {
-  padding-bottom: calc(var(--miniplayer-height) + 1.5rem);
+  .site-nav {
+    margin-inline: auto;
+  }
 }
 
 @media (min-width: 60rem) {
+  .radio-desk,
   .tv-desk {
     grid-template-columns: minmax(0, 1fr) 19rem;
   }
 }
 
 @media (max-width: 36rem) {
-  .mini-player__equalizer,
-  .mini-player__subtitle {
-    display: none;
-  }
-
   .volume-slider {
     max-width: 5rem;
   }

@@ -1,0 +1,48 @@
+#panel-radio {
+  view-transition-name: panel-radio;
+}
+
+#panel-tv {
+  view-transition-name: panel-tv;
+}
+
+::view-transition-old(panel-radio),
+::view-transition-old(panel-tv) {
+  animation: view-out var(--dur) var(--ease) both;
+}
+
+::view-transition-new(panel-radio),
+::view-transition-new(panel-tv) {
+  animation: view-in var(--dur) var(--ease) both;
+}
+
+@keyframes view-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+
+@supports not (view-transition-name: none) {
+  .panel {
+    animation: panel-in 260ms var(--ease);
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

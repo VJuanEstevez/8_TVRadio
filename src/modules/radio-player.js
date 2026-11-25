@@ -5,25 +5,29 @@ const STATE_BADGES = {
   error: { text: 'SIN SEÑAL', modifier: 'live-badge--error' },
 };
 
-export function initMiniPlayer({ engine, onStop }) {
-  const player = document.querySelector('#mini-player');
-  const logo = document.querySelector('#mini-logo');
-  const title = document.querySelector('#mini-title');
-  const subtitle = document.querySelector('#mini-subtitle');
-  const badge = document.querySelector('#mini-state');
-  const toggleButton = document.querySelector('#mini-toggle');
-  const muteButton = document.querySelector('#mini-mute');
-  const volumeSlider = document.querySelector('#mini-volume');
-  const stopButton = document.querySelector('#mini-stop');
+export function initRadioPlayer({ engine, onStop }) {
+  const empty = document.querySelector('#radio-player-empty');
+  const body = document.querySelector('#radio-player-body');
+  const logo = document.querySelector('#radio-player-logo');
+  const title = document.querySelector('#radio-player-title');
+  const subtitle = document.querySelector('#radio-player-subtitle');
+  const badge = document.querySelector('#radio-player-state');
+  const toggleButton = document.querySelector('#radio-player-toggle');
+  const muteButton = document.querySelector('#radio-player-mute');
+  const volumeSlider = document.querySelector('#radio-player-volume');
+  const stopButton = document.querySelector('#radio-player-stop');
 
   toggleButton.addEventListener('click', () => engine.toggle());
   muteButton.addEventListener('click', () => engine.setMuted(!engine.getSnapshot().muted));
   stopButton.addEventListener('click', onStop);
   volumeSlider.addEventListener('input', () => engine.setVolume(Number(volumeSlider.value) / 100));
 
-  return function updateMiniPlayer({ current, state, volume, muted }) {
-    player.hidden = !current;
-    if (!current) return;
+  return function updateRadioPlayer({ current, state, volume, muted }) {
+    const isRadio = current?.kind === 'radio';
+    empty.hidden = isRadio;
+    body.hidden = !isRadio;
+    body.classList.toggle('is-playing', isRadio && (state === 'playing' || state === 'loading'));
+    if (!isRadio) return;
 
     logo.textContent = current.logoText;
     logo.style.setProperty('--logo-bg', current.logoBg);
@@ -33,8 +37,7 @@ export function initMiniPlayer({ engine, onStop }) {
 
     const badgeState = STATE_BADGES[state] ?? STATE_BADGES.paused;
     badge.textContent = badgeState.text;
-    badge.className = `live-badge mini-player__state ${badgeState.modifier}`;
-    player.classList.toggle('is-playing', state === 'playing' || state === 'loading');
+    badge.className = `live-badge radio-player__state ${badgeState.modifier}`;
 
     const isBusy = state === 'playing' || state === 'loading';
     toggleButton.querySelector('.icon--play').hidden = isBusy;

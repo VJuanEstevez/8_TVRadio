@@ -3,29 +3,37 @@ import { icon, equalizerMarkup } from './utils.js';
 
 function stationCardMarkup(station) {
   const style = `--logo-bg:${station.logoBg};--logo-ink:${station.logoInk};--station-accent:${station.accent}`;
+  const search = [station.name, station.frequency, station.city, station.id].join(' ').toLowerCase();
+  const detail = `${station.frequency} · ${station.city}`;
   return `
-    <li class="station-card" data-station-id="${station.id}" style="${style}">
+    <li class="station-card" data-station-id="${station.id}" data-search="${search}" style="${style}">
       <button class="station-card__button" type="button" aria-pressed="false">
-        <span class="station-card__head">
-          <span class="station-card__logo" data-brand="${station.id}">${station.logoText}</span>
-          ${equalizerMarkup()}
+        <span class="station-card__logo" data-brand="${station.id}">${station.logoText}</span>
+        <span class="station-card__body">
+          <span class="station-card__name">${station.name}</span>
+          <span class="station-card__meta">
+            <span class="station-card__marquee">
+              <span class="station-card__marquee-track">
+                <span class="station-card__marquee-item">${detail}</span>
+                <span class="station-card__marquee-item" aria-hidden="true">${detail}</span>
+              </span>
+            </span>
+          </span>
         </span>
-        <span class="station-card__frequency">${station.frequency}</span>
-        <span class="station-card__city">${station.city}</span>
-        <span class="station-card__foot">
-          <span class="live-badge" data-badge hidden><span class="live-badge__dot" aria-hidden="true"></span>EN DIRECTO</span>
-          <span class="station-card__action" aria-hidden="true">${icon('play')}${icon('pause', { hidden: true })}</span>
-          <span class="visually-hidden" data-state-label></span>
-        </span>
+        <span class="live-badge" data-badge hidden><span class="live-badge__dot" aria-hidden="true"></span>EN DIRECTO</span>
+        ${equalizerMarkup()}
+        <span class="station-card__action" aria-hidden="true">${icon('play')}${icon('pause', { hidden: true })}</span>
+        <span class="visually-hidden" data-state-label></span>
       </button>
     </li>`;
 }
 
 export function initRadioView({ onSelect }) {
-  const grid = document.querySelector('#station-grid');
-  grid.innerHTML = RADIO_STATIONS.map(stationCardMarkup).join('');
+  const list = document.querySelector('#station-list');
+  list.innerHTML = RADIO_STATIONS.map(stationCardMarkup).join('');
+  const cards = Array.from(list.querySelectorAll('.station-card'));
 
-  grid.addEventListener('click', (event) => {
+  list.addEventListener('click', (event) => {
     const button = event.target.closest('.station-card__button');
     if (!button) return;
     const card = button.closest('.station-card');
@@ -33,10 +41,10 @@ export function initRadioView({ onSelect }) {
     if (station) onSelect(station);
   });
 
-  return function updateRadioView({ current, state }) {
+  function update({ current, state }) {
     const activeId = current?.kind === 'radio' ? current.id : null;
 
-    for (const card of grid.querySelectorAll('.station-card')) {
+    for (const card of cards) {
       const isActive = card.dataset.stationId === activeId;
       const isPlaying = isActive && state === 'playing';
       const isLoading = isActive && state === 'loading';
@@ -62,5 +70,14 @@ export function initRadioView({ onSelect }) {
         label.textContent = '';
       }
     }
-  };
+  }
+
+  function filter(query) {
+    const normalized = query.trim().toLowerCase();
+    for (const card of cards) {
+      card.hidden = Boolean(normalized) && !card.dataset.search.includes(normalized);
+    }
+  }
+
+  return { update, filter };
 }
