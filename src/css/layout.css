@@ -27,12 +27,16 @@
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
   background:
-    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 45%, transparent) 0 28%, transparent 30%),
+    radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--accent) 45%, transparent) 0 28%,
+      transparent 30%
+    ),
     var(--bg-raised);
 }
 
 .brand__beacon::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0.4rem;
   border-radius: 50%;

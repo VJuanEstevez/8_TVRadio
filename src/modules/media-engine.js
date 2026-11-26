@@ -1,20 +1,20 @@
 const MAX_RETRIES = 2;
-const HLS_MIME = 'application/vnd.apple.mpegurl';
+const HLS_MIME = "application/vnd.apple.mpegurl";
 
 export function createMediaEngine() {
-  const audio = document.createElement('audio');
-  audio.preload = 'none';
+  const audio = document.createElement("audio");
+  audio.preload = "none";
   audio.hidden = true;
   document.body.append(audio);
 
-  const video = document.createElement('video');
+  const video = document.createElement("video");
   video.playsInline = true;
-  video.preload = 'none';
-  video.setAttribute('playsinline', '');
+  video.preload = "none";
+  video.setAttribute("playsinline", "");
 
   let hls = null;
   let current = null;
-  let state = 'idle'; // idle | loading | playing | paused | error
+  let state = "idle"; // idle | loading | playing | paused | error
   let errorMessage = null;
   let retries = 0;
   let levelHeight = null;
@@ -39,7 +39,7 @@ export function createMediaEngine() {
   }
 
   function mediaFor(source) {
-    return source.kind === 'tv' ? video : audio;
+    return source.kind === "tv" ? video : audio;
   }
 
   function applyVolume() {
@@ -60,7 +60,7 @@ export function createMediaEngine() {
     destroyHls();
     for (const media of [audio, video]) {
       media.pause();
-      media.removeAttribute('src');
+      media.removeAttribute("src");
       try {
         media.load();
       } catch {
@@ -71,33 +71,33 @@ export function createMediaEngine() {
   }
 
   function setMediaSession(source) {
-    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    if (!("mediaSession" in navigator) || typeof MediaMetadata === "undefined") return;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: source.name,
-      artist: source.kind === 'tv' ? source.subtitle : `${source.subtitle} · Radio en directo`,
-      album: 'AIRE — consola de emisión',
+      artist: source.kind === "tv" ? source.subtitle : `${source.subtitle} · Radio en directo`,
+      album: "AIRE — consola de emisión",
     });
   }
 
   function fail(message) {
-    state = 'error';
+    state = "error";
     errorMessage = message;
     window.setTimeout(() => {
-      if (state === 'error') stopInternal();
+      if (state === "error") stopInternal();
     }, 0);
     emit();
   }
 
   function handleMediaError(media) {
     if (!current || mediaFor(current) !== media) return;
-    if (hls && current.type === 'hls') return; // hls.js reports and recovers its own errors
-    if (state === 'paused') return; // the user already stopped this source on purpose
+    if (hls && current.type === "hls") return; // hls.js reports and recovers its own errors
+    if (state === "paused") return; // the user already stopped this source on purpose
     if (retries < MAX_RETRIES) {
       retries += 1;
       const source = current;
       window.setTimeout(() => {
-        if (current !== source || state === 'paused') return;
-        state = 'loading';
+        if (current !== source || state === "paused") return;
+        state = "loading";
         emit();
         media.src = source.stream;
         media.play().catch(() => {});
@@ -109,14 +109,14 @@ export function createMediaEngine() {
 
   function handleHlsError(data, instance) {
     if (!data.fatal || hls !== instance || !current) return;
-    if (data.type === 'networkError' && retries < MAX_RETRIES) {
+    if (data.type === "networkError" && retries < MAX_RETRIES) {
       retries += 1;
       window.setTimeout(() => {
         if (hls === instance) instance.startLoad();
       }, 800 * retries);
       return;
     }
-    if (data.type === 'mediaError' && retries < MAX_RETRIES) {
+    if (data.type === "mediaError" && retries < MAX_RETRIES) {
       retries += 1;
       window.setTimeout(() => {
         if (hls === instance) instance.recoverMediaError();
@@ -128,7 +128,7 @@ export function createMediaEngine() {
 
   async function attach(source) {
     const media = mediaFor(source);
-    const isHls = source.type === 'hls';
+    const isHls = source.type === "hls";
 
     if (isHls && media.canPlayType(HLS_MIME)) {
       media.src = source.stream;
@@ -137,23 +137,23 @@ export function createMediaEngine() {
     }
 
     if (isHls) {
-      const { default: Hls } = await import('hls.js');
+      const { default: Hls } = await import("hls.js");
       if (current !== source) return;
       if (!Hls.isSupported()) {
-        fail('Este navegador no puede reproducir señales HLS');
+        fail("Este navegador no puede reproducir señales HLS");
         return;
       }
       const instance = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 60 });
       hls = instance;
-      instance.on('hlsManifestParsed', () => {
-        if (hls === instance && state === 'loading') media.play().catch(handlePlayRejection);
+      instance.on("hlsManifestParsed", () => {
+        if (hls === instance && state === "loading") media.play().catch(handlePlayRejection);
       });
-      instance.on('hlsLevelSwitched', (_event, data) => {
+      instance.on("hlsLevelSwitched", (_event, data) => {
         if (hls !== instance) return;
         levelHeight = instance.levels?.[data.level]?.height ?? null;
         emit();
       });
-      instance.on('hlsError', (_event, data) => handleHlsError(data, instance));
+      instance.on("hlsError", (_event, data) => handleHlsError(data, instance));
       instance.loadSource(source.stream);
       instance.attachMedia(media);
       return;
@@ -165,9 +165,9 @@ export function createMediaEngine() {
 
   function handlePlayRejection(reason) {
     if (!current) return;
-    if (reason?.name === 'AbortError' || reason?.name === 'InterruptedError') return; // paused meanwhile
-    if (reason?.name === 'NotAllowedError') {
-      state = 'paused';
+    if (reason?.name === "AbortError" || reason?.name === "InterruptedError") return; // paused meanwhile
+    if (reason?.name === "NotAllowedError") {
+      state = "paused";
       errorMessage = null;
       emit();
       return;
@@ -176,33 +176,33 @@ export function createMediaEngine() {
   }
 
   function bindMedia(media, kind) {
-    media.addEventListener('playing', () => {
+    media.addEventListener("playing", () => {
       if (!current || current.kind !== kind) return;
-      state = 'playing';
+      state = "playing";
       errorMessage = null;
       retries = 0;
       emit();
     });
-    media.addEventListener('waiting', () => {
-      if (!current || current.kind !== kind || state !== 'playing') return;
-      state = 'loading';
+    media.addEventListener("waiting", () => {
+      if (!current || current.kind !== kind || state !== "playing") return;
+      state = "loading";
       emit();
     });
-    media.addEventListener('error', () => handleMediaError(media));
-    media.addEventListener('ended', () => {
+    media.addEventListener("error", () => handleMediaError(media));
+    media.addEventListener("ended", () => {
       if (!current || current.kind !== kind) return;
-      state = 'paused';
+      state = "paused";
       emit();
     });
   }
 
-  bindMedia(audio, 'radio');
-  bindMedia(video, 'tv');
+  bindMedia(audio, "radio");
+  bindMedia(video, "tv");
   applyVolume();
 
   function load(source, { autoplay = true } = {}) {
     const sameSource = current && current.id === source.id && current.kind === source.kind;
-    if (sameSource && state !== 'error') return toggle();
+    if (sameSource && state !== "error") return toggle();
 
     stopInternal();
     current = source;
@@ -211,12 +211,12 @@ export function createMediaEngine() {
     setMediaSession(source);
 
     if (!autoplay) {
-      state = 'paused';
+      state = "paused";
       emit();
       return;
     }
 
-    state = 'loading';
+    state = "loading";
     emit();
     attach(source).catch(() => fail(`No se ha podido conectar con ${source.name}`));
   }
@@ -225,21 +225,21 @@ export function createMediaEngine() {
     if (!current) return;
     const media = mediaFor(current);
 
-    if (state === 'playing' || state === 'loading') {
+    if (state === "playing" || state === "loading") {
       media.pause();
-      state = 'paused';
+      state = "paused";
       emit();
       return;
     }
 
-    if (state === 'error') {
+    if (state === "error") {
       load(current, { autoplay: true });
       return;
     }
 
-    state = 'loading';
+    state = "loading";
     emit();
-    if (!media.getAttribute('src') && !hls) {
+    if (!media.getAttribute("src") && !hls) {
       attach(current).catch(() => fail(`No se ha podido conectar con ${current.name}`));
       return;
     }
@@ -249,9 +249,9 @@ export function createMediaEngine() {
   function stop() {
     stopInternal();
     current = null;
-    state = 'idle';
+    state = "idle";
     errorMessage = null;
-    if ('mediaSession' in navigator) navigator.mediaSession.metadata = null;
+    if ("mediaSession" in navigator) navigator.mediaSession.metadata = null;
     emit();
   }
 

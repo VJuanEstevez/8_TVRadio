@@ -30,7 +30,7 @@
   color: var(--text);
 }
 
-.tab[aria-selected='true'] {
+.tab[aria-selected="true"] {
   border-color: color-mix(in srgb, var(--accent) 65%, transparent);
   background: color-mix(in srgb, var(--accent) 20%, var(--bg-card));
   color: var(--text);
@@ -46,7 +46,7 @@
   padding: 0.4rem 0.7rem;
   border-radius: var(--radius-sm);
   background: var(--logo-bg, var(--accent));
-  color: var(--logo-ink, #ffffff);
+  color: var(--logo-ink, #fff);
   font-weight: 800;
   font-size: 1.05rem;
   line-height: 1;
@@ -172,7 +172,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: currentColor;
+  background: currentcolor;
   animation: live-pulse 1.6s var(--ease) infinite;
 }
 
@@ -183,12 +183,12 @@
 
 .live-badge--paused {
   background: #3a4152;
-  color: #ffffff;
+  color: #fff;
 }
 
 .live-badge--error {
   background: var(--live);
-  color: #ffffff;
+  color: #fff;
 }
 
 /* ---------- Buttons & sliders ---------- */
@@ -211,16 +211,17 @@
   background: rgb(255 255 255 / 0.18);
 }
 
-.icon-button[aria-pressed='true'] {
+.icon-button[aria-pressed="true"] {
   background: color-mix(in srgb, var(--live) 35%, rgb(255 255 255 / 0.08));
 }
 
 .volume-slider {
-  --slider-fill: color-mix(in srgb, var(--accent) 75%, #ffffff);
+  --slider-fill: color-mix(in srgb, var(--accent) 75%, #fff);
+
   width: 7rem;
   height: 1.6rem;
   appearance: none;
-  -webkit-appearance: none;
+  appearance: none;
   background: transparent;
   cursor: pointer;
 }
@@ -248,7 +249,7 @@
 }
 
 .volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
+  appearance: none;
   width: 0.95rem;
   height: 0.95rem;
   margin-top: -0.3rem;

@@ -1,17 +1,19 @@
-const CACHE_NAME = 'aire-shell-v1';
+const CACHE_NAME = "aire-shell-v1";
 const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon-maskable-512.png",
 ];
 
 const STREAM_PATTERN = /\.(m3u8|mp3|aac|ts|m4s|mp4|ogg|webm)(\?|$)/i;
 
 function isStream(request, url) {
-  return ['audio', 'video', 'media'].includes(request.destination) || STREAM_PATTERN.test(url.pathname);
+  return (
+    ["audio", "video", "media"].includes(request.destination) || STREAM_PATTERN.test(url.pathname)
+  );
 }
 
 async function precache() {
@@ -19,7 +21,7 @@ async function precache() {
   const urls = new Set(APP_SHELL);
 
   try {
-    const response = await fetch('./index.html');
+    const response = await fetch("./index.html");
     if (response.ok) {
       const html = await response.text();
       for (const match of html.matchAll(/(?:src|href)="(\.\/[^"]+)"/g)) urls.add(match[1]);
@@ -35,10 +37,10 @@ async function networkFirstNavigation(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
     const response = await fetch(request);
-    if (response.ok) await cache.put('./index.html', response.clone());
+    if (response.ok) await cache.put("./index.html", response.clone());
     return response;
   } catch {
-    return (await cache.match('./index.html')) ?? (await cache.match('./')) ?? Response.error();
+    return (await cache.match("./index.html")) ?? (await cache.match("./")) ?? Response.error();
   }
 }
 
@@ -63,36 +65,38 @@ async function staleWhileRevalidate(request) {
   return cached ?? updated;
 }
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(precache().then(() => self.skipWaiting()));
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((names) =>
         Promise.all(
-          names.filter((name) => name.startsWith('aire-') && name !== CACHE_NAME).map((name) => caches.delete(name)),
-        ),
+          names
+            .filter((name) => name.startsWith("aire-") && name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        )
       )
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
+  if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
-  if (request.mode === 'navigate') {
+  if (request.mode === "navigate") {
     event.respondWith(networkFirstNavigation(request));
     return;
   }
 
-  if (url.pathname.endsWith('/sw.js')) return;
+  if (url.pathname.endsWith("/sw.js")) return;
 
   if (url.origin === self.location.origin) {
     event.respondWith(cacheFirst(request));

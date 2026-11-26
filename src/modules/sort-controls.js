@@ -1,6 +1,6 @@
-import { RADIO_STATIONS, TV_CHANNELS } from './streams.js';
-import { initSort, SORT_LABELS } from './sort.js';
-import { announce } from './utils.js';
+import { RADIO_STATIONS, TV_CHANNELS } from "./streams.js";
+import { initSort, SORT_LABELS } from "./sort.js";
+import { announce } from "./utils.js";
 
 export function initSortControls({ state, saved, persist }) {
   function setup({ selectId, listId, items, idAttribute, key, label }) {
@@ -19,19 +19,19 @@ export function initSortControls({ state, saved, persist }) {
   }
 
   setup({
-    selectId: '#station-sort',
-    listId: '#station-list',
+    selectId: "#station-sort",
+    listId: "#station-list",
     items: RADIO_STATIONS,
-    idAttribute: 'data-station-id',
-    key: 'radioSort',
-    label: 'Emisoras',
+    idAttribute: "data-station-id",
+    key: "radioSort",
+    label: "Emisoras",
   });
   setup({
-    selectId: '#channel-sort',
-    listId: '#channel-list',
+    selectId: "#channel-sort",
+    listId: "#channel-list",
     items: TV_CHANNELS,
-    idAttribute: 'data-channel-id',
-    key: 'tvSort',
-    label: 'Canales',
+    idAttribute: "data-channel-id",
+    key: "tvSort",
+    label: "Canales",
   });
 }

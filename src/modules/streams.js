@@ -1,8 +1,8 @@
-import { RADIO_NATIONAL } from './data/radio-national.js';
-import { RADIO_REGIONAL } from './data/radio-regional.js';
-import { RADIO_INTERNATIONAL } from './data/radio-international.js';
-import { TV_NATIONAL } from './data/tv-national.js';
-import { TV_REGIONAL } from './data/tv-regional.js';
+import { RADIO_NATIONAL } from "./data/radio-national.js";
+import { RADIO_REGIONAL } from "./data/radio-regional.js";
+import { RADIO_INTERNATIONAL } from "./data/radio-international.js";
+import { TV_NATIONAL } from "./data/tv-national.js";
+import { TV_REGIONAL } from "./data/tv-regional.js";
 
 export const RADIO_STATIONS = [...RADIO_NATIONAL, ...RADIO_REGIONAL, ...RADIO_INTERNATIONAL];
 

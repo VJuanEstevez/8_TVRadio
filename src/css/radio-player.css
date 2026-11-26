@@ -21,7 +21,11 @@
   padding: var(--space-5);
   text-align: center;
   background:
-    radial-gradient(circle at center, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%),
+    radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--accent) 14%, transparent),
+      transparent 65%
+    ),
     #05070b;
 }
 

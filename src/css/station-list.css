@@ -28,15 +28,15 @@
     var(--shadow-card);
 }
 
-.station-card__logo[data-brand='cope'] {
+.station-card__logo[data-brand="cope"] {
   letter-spacing: 0.1em;
 }
 
-.station-card__logo[data-brand='rockfm'] {
+.station-card__logo[data-brand="rockfm"] {
   font-style: italic;
 }
 
-.station-card__logo[data-brand='los40'] {
+.station-card__logo[data-brand="los40"] {
   transform: skewX(-6deg);
 }
 

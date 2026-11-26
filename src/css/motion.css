@@ -2,6 +2,7 @@
   from {
     transform: scaleY(0.25);
   }
+
   to {
     transform: scaleY(1);
   }
@@ -12,6 +13,7 @@
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.35;
   }
@@ -22,6 +24,7 @@
     transform: scale(0.75);
     opacity: 0.9;
   }
+
   70%,
   100% {
     transform: scale(1.25);

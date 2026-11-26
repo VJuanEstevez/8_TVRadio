@@ -6,13 +6,13 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: #000000;
+  background: #000;
 
   video {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #000000;
+    background: #000;
   }
 
   &:fullscreen {
@@ -32,7 +32,11 @@
     text-align: center;
     color: var(--text-muted);
     background:
-      radial-gradient(circle at center, color-mix(in srgb, var(--accent) 12%, transparent), transparent 65%),
+      radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--accent) 12%, transparent),
+        transparent 65%
+      ),
       #05070b;
 
     &[hidden] {
@@ -84,7 +88,11 @@
     padding: var(--space-5);
     text-align: center;
     background:
-      radial-gradient(circle at center, color-mix(in srgb, var(--accent) 20%, transparent), transparent 65%),
+      radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--accent) 20%, transparent),
+        transparent 65%
+      ),
       #05070b;
 
     &[hidden] {
@@ -96,7 +104,7 @@
     padding: 0.6rem 1rem;
     border-radius: var(--radius-sm);
     background: var(--logo-bg, var(--accent));
-    color: var(--logo-ink, #ffffff);
+    color: var(--logo-ink, #fff);
     font-weight: 800;
     font-size: 1.4rem;
     line-height: 1;

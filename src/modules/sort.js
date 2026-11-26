@@ -1,23 +1,32 @@
 // Ordenación de listas: orden original, alfabético o agrupado por categoría.
 
-const CATEGORY_ORDER = ['Generalistas', 'Noticias', 'Deportes', 'Música', 'Infantil', 'Internacional'];
+const CATEGORY_ORDER = [
+  "Generalistas",
+  "Noticias",
+  "Deportes",
+  "Música",
+  "Infantil",
+  "Internacional",
+];
 
 export const SORT_LABELS = {
-  default: 'en el orden original',
-  az: 'alfabéticamente',
-  category: 'por categoría',
+  default: "en el orden original",
+  az: "alfabéticamente",
+  category: "por categoría",
 };
 
 export function initSort({ select, list, items, idAttribute, onSort } = {}) {
-  const cards = new Map(Array.from(list.children).map((card) => [card.getAttribute(idAttribute), card]));
+  const cards = new Map(
+    Array.from(list.children).map((card) => [card.getAttribute(idAttribute), card])
+  );
 
   function apply() {
     const mode = select.value;
     const ordered = [...items];
 
-    if (mode === 'az') {
-      ordered.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
-    } else if (mode === 'category') {
+    if (mode === "az") {
+      ordered.sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
+    } else if (mode === "category") {
       ordered.sort((a, b) => {
         const rankA = CATEGORY_ORDER.indexOf(a.category);
         const rankB = CATEGORY_ORDER.indexOf(b.category);
@@ -30,10 +39,10 @@ export function initSort({ select, list, items, idAttribute, onSort } = {}) {
       const card = cards.get(item.id);
       if (card) list.append(card);
     }
-    list.classList.toggle('is-grouped', mode === 'category');
+    list.classList.toggle("is-grouped", mode === "category");
   }
 
-  select.addEventListener('change', () => {
+  select.addEventListener("change", () => {
     apply();
     onSort?.(select.value);
   });
