@@ -3,7 +3,10 @@ import { createMediaEngine } from './media-engine.js';
 import { initRadioView } from './radio.js';
 import { initTvView } from './tv.js';
 import { initRadioPlayer } from './radio-player.js';
+import { initMiniPlayer } from './mini-player.js';
 import { initSearch } from './search.js';
+import { createTabsSync } from './tabs-sync.js';
+import { initSortControls } from './sort-controls.js';
 import { announce, loadStoredState, saveStoredState } from './utils.js';
 
 const DEFAULT_STATE = {
@@ -11,6 +14,9 @@ const DEFAULT_STATE = {
   source: null,
   volume: 0.8,
   muted: false,
+  audioOnly: false,
+  radioSort: 'default',
+  tvSort: 'default',
   wasPlaying: false,
 };
 
@@ -72,10 +78,18 @@ export function init() {
 
   engine.setVolume(saved.volume);
   engine.setMuted(saved.muted);
+  engine.setAudioOnly(saved.audioOnly);
 
-  const state = { tab: saved.tab };
+  const state = { tab: saved.tab, radioSort: saved.radioSort, tvSort: saved.tvSort };
   let lastPersisted = '';
   let announcement = { id: null, step: null };
+
+  const sync = createTabsSync({
+    onTakeover() {
+      engine.stop();
+      announce('La reproducción se ha movido a otra pestaña');
+    },
+  });
 
   function persist() {
     const snapshot = engine.getSnapshot();
@@ -84,6 +98,9 @@ export function init() {
       source: snapshot.current ? { kind: snapshot.current.kind, id: snapshot.current.id } : null,
       volume: snapshot.volume,
       muted: snapshot.muted,
+      audioOnly: snapshot.audioOnly,
+      radioSort: state.radioSort,
+      tvSort: state.tvSort,
       wasPlaying: snapshot.state === 'playing' || snapshot.state === 'loading',
     };
     const serialized = JSON.stringify(next);
@@ -119,6 +136,23 @@ export function init() {
     },
   });
 
+  const tabs = initTabs((tabId) => {
+    state.tab = tabId;
+    persist();
+  });
+  tabs.activateById(saved.tab, { focus: false, animate: false });
+
+  function openMiniPlayer(kind) {
+    tabs.activateById(kind === 'tv' ? 'tv' : 'radio', { focus: false, animate: false });
+    const player = document.querySelector(kind === 'tv' ? '#video-stage' : '#radio-player');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    player.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+  }
+
+  const updateMiniPlayer = initMiniPlayer({ engine, onOpen: openMiniPlayer });
+
+  initSortControls({ state, saved, persist });
+
   function toSource(item) {
     const isRadio = 'frequency' in item;
     return {
@@ -149,6 +183,7 @@ export function init() {
     radioView.update(snapshot);
     tvView.update(snapshot);
     updateRadioPlayer(snapshot);
+    updateMiniPlayer(snapshot);
 
     document.title =
       current && playbackState === 'playing'
@@ -158,6 +193,10 @@ export function init() {
     const step = `${current?.id ?? 'none'}:${playbackState}`;
     if (step !== announcement.step) {
       const previous = announcement;
+      const wasBusy = previous.state === 'playing' || previous.state === 'loading';
+      const isBusy = playbackState === 'playing' || playbackState === 'loading';
+      if (isBusy && !wasBusy && current) sync.claim(current);
+      if (!current && previous.step !== null) sync.release();
       const isFirstSnapshot = previous.step === null;
       announcement = { id: current?.id ?? null, step, state: playbackState };
       if (isFirstSnapshot) {
@@ -177,12 +216,6 @@ export function init() {
 
     persist();
   }
-
-  const tabs = initTabs((tabId) => {
-    state.tab = tabId;
-    persist();
-  });
-  tabs.activateById(saved.tab, { focus: false, animate: false });
 
   let searchTimer = 0;
   initSearch({
@@ -204,5 +237,13 @@ export function init() {
       ? findStation(saved.source.id)
       : findChannel(saved.source.id)
     : null;
-  if (restored) engine.load(toSource(restored), { autoplay: saved.wasPlaying });
+  if (restored) {
+    if (saved.wasPlaying) {
+      sync.checkOccupied((occupied) => {
+        if (!occupied) engine.load(toSource(restored), { autoplay: true });
+      });
+    } else {
+      engine.load(toSource(restored), { autoplay: false });
+    }
+  }
 }

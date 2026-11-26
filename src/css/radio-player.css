@@ -56,6 +56,17 @@
   color: var(--text-muted);
 }
 
+.radio-player__source {
+  align-self: center;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
 .radio-player__state {
   margin-top: var(--space-1);
 }

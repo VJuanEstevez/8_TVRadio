@@ -3,13 +3,14 @@ import { icon, equalizerMarkup } from './utils.js';
 
 function stationCardMarkup(station) {
   const style = `--logo-bg:${station.logoBg};--logo-ink:${station.logoInk};--station-accent:${station.accent}`;
-  const search = [station.name, station.frequency, station.city, station.id].join(' ').toLowerCase();
+  const search = [station.name, station.frequency, station.city, station.category, station.id].join(' ').toLowerCase();
   const detail = `${station.frequency} · ${station.city}`;
   return `
     <li class="station-card" data-station-id="${station.id}" data-search="${search}" style="${style}">
       <button class="station-card__button" type="button" aria-pressed="false">
         <span class="station-card__logo" data-brand="${station.id}">${station.logoText}</span>
         <span class="station-card__body">
+          <span class="station-card__category">${station.category}</span>
           <span class="station-card__name">${station.name}</span>
           <span class="station-card__meta">
             <span class="station-card__marquee">

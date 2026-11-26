@@ -20,10 +20,11 @@ export function createMediaEngine() {
   let levelHeight = null;
   let volume = 0.8;
   let muted = false;
+  let audioOnly = false;
   const listeners = new Set();
 
   function snapshot() {
-    return { current, state, error: errorMessage, levelHeight, volume, muted };
+    return { current, state, error: errorMessage, levelHeight, volume, muted, audioOnly };
   }
 
   function emit() {
@@ -266,6 +267,11 @@ export function createMediaEngine() {
     emit();
   }
 
+  function setAudioOnly(nextAudioOnly) {
+    audioOnly = Boolean(nextAudioOnly);
+    emit();
+  }
+
   return {
     video,
     on,
@@ -274,6 +280,7 @@ export function createMediaEngine() {
     stop,
     setVolume,
     setMuted,
+    setAudioOnly,
     getSnapshot: snapshot,
   };
 }

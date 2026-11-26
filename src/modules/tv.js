@@ -3,12 +3,13 @@ import { equalizerMarkup, announce } from './utils.js';
 
 function channelCardMarkup(channel) {
   const style = `--logo-bg:${channel.logoBg};--logo-ink:${channel.logoInk};--station-accent:${channel.accent}`;
-  const search = [channel.name, channel.network, channel.id].join(' ').toLowerCase();
+  const search = [channel.name, channel.network, channel.category, channel.id].join(' ').toLowerCase();
   return `
     <li class="channel-card" data-channel-id="${channel.id}" data-search="${search}" style="${style}">
       <button class="channel-card__button" type="button" aria-pressed="false">
         <span class="channel-card__logo" data-brand="${channel.id}">${channel.logoText}</span>
         <span class="channel-card__body">
+          <span class="channel-card__category">${channel.category}</span>
           <span class="channel-card__network">${channel.network}</span>
           <span class="channel-card__state" data-state-label></span>
         </span>
@@ -22,6 +23,9 @@ export function initTvView({ engine, onSelect }) {
   const placeholder = document.querySelector('#video-placeholder');
   const overlay = document.querySelector('#video-overlay');
   const overlayName = document.querySelector('#video-channel-name');
+  const audioLayer = document.querySelector('#video-audio-only');
+  const audioLogo = document.querySelector('#video-audio-logo');
+  const audioName = document.querySelector('#video-audio-name');
   const qualityChip = document.querySelector('#video-quality');
   const list = document.querySelector('#channel-list');
 
@@ -44,12 +48,12 @@ export function initTvView({ engine, onSelect }) {
   const volumeSlider = document.querySelector('#video-volume');
   const fullscreenButton = document.querySelector('#video-fullscreen');
   const pipButton = document.querySelector('#video-pip');
+  const audioButton = document.querySelector('#video-audio-only-toggle');
   const stateBadge = document.querySelector('#video-state');
 
   const canFullscreenElement = 'requestFullscreen' in stage;
   const canFullscreenVideo = 'webkitEnterFullscreen' in engine.video;
-  if (!canFullscreenElement && !canFullscreenVideo) fullscreenButton.hidden = true;
-  pipButton.hidden = !('pictureInPictureEnabled' in document) || !document.pictureInPictureEnabled;
+  const canPip = 'pictureInPictureEnabled' in document && document.pictureInPictureEnabled;
 
   toggleButton.addEventListener('click', () => {
     const { current } = engine.getSnapshot();
@@ -67,6 +71,16 @@ export function initTvView({ engine, onSelect }) {
   });
 
   muteButton.addEventListener('click', () => engine.setMuted(!engine.getSnapshot().muted));
+
+  audioButton.addEventListener('click', () => {
+    const { audioOnly } = engine.getSnapshot();
+    if (!audioOnly) {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
+    }
+    engine.setAudioOnly(!audioOnly);
+    announce(audioOnly ? 'Vídeo restablecido' : 'Solo audio activado');
+  });
 
   volumeSlider.addEventListener('input', () => {
     engine.setVolume(Number(volumeSlider.value) / 100);
@@ -111,7 +125,7 @@ export function initTvView({ engine, onSelect }) {
       : 'Pantalla completa';
   });
 
-  function update({ current, state, levelHeight, volume, muted }) {
+  function update({ current, state, levelHeight, volume, muted, audioOnly }) {
     const activeId = current?.kind === 'tv' ? current.id : null;
 
     for (const card of cards) {
@@ -135,19 +149,33 @@ export function initTvView({ engine, onSelect }) {
     }
 
     const stageActive = activeId !== null;
+    const isAudioOnly = stageActive && audioOnly;
     placeholder.hidden = stageActive;
-    overlay.hidden = !stageActive;
+    overlay.hidden = !stageActive || isAudioOnly;
+    audioLayer.hidden = !isAudioOnly;
+    stage.classList.toggle('is-audio-only', isAudioOnly);
+    fullscreenButton.hidden = (!canFullscreenElement && !canFullscreenVideo) || isAudioOnly;
+    pipButton.hidden = !canPip || isAudioOnly;
 
     if (stageActive && current) {
       overlayName.textContent = current.name;
+      audioLogo.textContent = current.logoText;
+      audioLogo.style.setProperty('--logo-bg', current.logoBg);
+      audioLogo.style.setProperty('--logo-ink', current.logoInk);
+      audioName.textContent = current.name;
     }
 
+    audioButton.setAttribute('aria-pressed', String(isAudioOnly));
+    audioButton.querySelector('[data-audio-label]').textContent = isAudioOnly ? 'Ver vídeo' : 'Solo audio';
+
     const showQuality = stageActive && (state === 'playing' || state === 'loading');
-    qualityChip.textContent = showQuality
-      ? levelHeight
-        ? `HLS · ${levelHeight}p`
-        : 'HLS · auto'
-      : 'HLS';
+    qualityChip.textContent = isAudioOnly
+      ? 'AUDIO'
+      : showQuality
+        ? levelHeight
+          ? `HLS · ${levelHeight}p`
+          : 'HLS · auto'
+        : 'HLS';
 
     toggleButton.querySelector('.icon--play').hidden = stageActive && state !== 'paused' && state !== 'error';
     toggleButton.querySelector('.icon--pause').hidden = !(stageActive && state !== 'paused' && state !== 'error');

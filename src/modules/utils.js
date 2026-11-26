@@ -43,6 +43,8 @@ const ICON_PATHS = {
     '<path d="M9 4v3.5A1.5 1.5 0 0 1 7.5 9H4M15 4v3.5a1.5 1.5 0 0 0 1.5 1.5H20M9 20v-3.5A1.5 1.5 0 0 0 7.5 15H4M15 20v-3.5a1.5 1.5 0 0 1 1.5-1.5H20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
   pictureInPicture:
     '<rect x="3.5" y="5.5" width="17" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="12" y="11.5" width="6" height="5" rx="1" fill="currentColor"/>',
+  headphones:
+    '<path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="3" y="13" width="3.5" height="6" rx="1.5" fill="currentColor"/><rect x="17.5" y="13" width="3.5" height="6" rx="1.5" fill="currentColor"/>',
   radio:
     '<circle cx="12" cy="8.5" r="2.1" fill="currentColor"/><path d="M8.6 11.9a4.8 4.8 0 0 1 0-6.8M15.4 5.1a4.8 4.8 0 0 1 0 6.8M6 14.5a8.4 8.4 0 0 1 0-12M18 2.5a8.4 8.4 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 10.8V21M9 21h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
   television:

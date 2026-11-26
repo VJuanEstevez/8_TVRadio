@@ -16,24 +16,28 @@ export function initRadioPlayer({ engine, onStop }) {
   const muteButton = document.querySelector('#radio-player-mute');
   const volumeSlider = document.querySelector('#radio-player-volume');
   const stopButton = document.querySelector('#radio-player-stop');
+  const sourceChip = document.querySelector('#radio-player-source');
 
   toggleButton.addEventListener('click', () => engine.toggle());
   muteButton.addEventListener('click', () => engine.setMuted(!engine.getSnapshot().muted));
   stopButton.addEventListener('click', onStop);
   volumeSlider.addEventListener('input', () => engine.setVolume(Number(volumeSlider.value) / 100));
 
-  return function updateRadioPlayer({ current, state, volume, muted }) {
+  return function updateRadioPlayer({ current, state, volume, muted, audioOnly }) {
     const isRadio = current?.kind === 'radio';
-    empty.hidden = isRadio;
-    body.hidden = !isRadio;
-    body.classList.toggle('is-playing', isRadio && (state === 'playing' || state === 'loading'));
-    if (!isRadio) return;
+    const isTvAudio = current?.kind === 'tv' && audioOnly;
+    const isActive = isRadio || isTvAudio;
+    empty.hidden = isActive;
+    body.hidden = !isActive;
+    body.classList.toggle('is-playing', isActive && (state === 'playing' || state === 'loading'));
+    if (!isActive) return;
 
     logo.textContent = current.logoText;
     logo.style.setProperty('--logo-bg', current.logoBg);
     logo.style.setProperty('--logo-ink', current.logoInk);
     title.textContent = current.name;
-    subtitle.textContent = current.subtitle;
+    subtitle.textContent = isTvAudio ? `TV en directo · ${current.subtitle}` : current.subtitle;
+    sourceChip.hidden = !isTvAudio;
 
     const badgeState = STATE_BADGES[state] ?? STATE_BADGES.paused;
     badge.textContent = badgeState.text;

@@ -1,0 +1,46 @@
+.list-pane {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.list-toolbar__select {
+  max-width: 100%;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.list-toolbar__select:hover {
+  border-color: var(--line-strong);
+}
+
+.station-card__category,
+.channel-card__category {
+  display: none;
+  align-self: flex-start;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--station-accent) 20%, transparent);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.station-list.is-grouped .station-card__category,
+.channel-list.is-grouped .channel-card__category {
+  display: inline-block;
+}

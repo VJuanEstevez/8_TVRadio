@@ -68,6 +68,50 @@
     font-weight: 700;
     font-size: 0.9rem;
   }
+
+  &.is-audio-only video {
+    visibility: hidden;
+  }
+
+  &__audio-only {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    text-align: center;
+    background:
+      radial-gradient(circle at center, color-mix(in srgb, var(--accent) 20%, transparent), transparent 65%),
+      #05070b;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &__audio-logo {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--logo-bg, var(--accent));
+    color: var(--logo-ink, #ffffff);
+    font-weight: 800;
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  &__audio-name {
+    font-size: clamp(1.25rem, 3vw, 1.8rem);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  &__audio-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
 }
 
 .video-controls {
