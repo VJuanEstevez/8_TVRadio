@@ -3,30 +3,22 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description"
-    content="AIRE: consola de emisión para escuchar la radio en directo (COPE, Cadena SER, Onda Cero, LOS 40 y RockFM) y ver televisión (La 1, La 2 y Teledeporte)." />
+    content="AIRE: consola de emisión para escuchar la radio en directo (COPE, Cadena SER, RNE, LOS 40, Cadena 100 y más) y ver televisión (La 1, La 2, 24 Horas, 3CatInfo, TRECE y más)." />
   <meta name="theme-color" content="#0d0f14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AIRE" />
+  <meta name="application-name" content="AIRE" />
   <title>AIRE — Radio y TV en directo</title>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(async (registrations) => {
-        if (!registrations.length && !navigator.serviceWorker.controller) return;
-        if (sessionStorage.getItem('aire-sw-reset')) return;
-        sessionStorage.setItem('aire-sw-reset', '1');
-        await Promise.all(registrations.map((registration) => registration.unregister()));
-        if ('caches' in window) {
-          const names = await caches.keys();
-          await Promise.all(names.map((name) => caches.delete(name)));
-        }
-        location.reload();
-      });
-    }
-  </script>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png" />
   <link rel="icon"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0f14'/%3E%3Ccircle cx='16' cy='14' r='3' fill='%23d13438'/%3E%3Cpath d='M9 20a10 10 0 0 1 0-12M23 8a10 10 0 0 1 0 12' stroke='%234f7dff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 17v9M11 26h10' stroke='%23e8ecf4' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E" />
-  <script type="module" crossorigin src="./assets/index-BltE1zce.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-C1yR8SdF.css">
+  <script type="module" crossorigin src="./assets/index-Cc6qXz8y.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-SY-cC7Fx.css">
 </head>
 
 <body>
@@ -75,12 +67,22 @@
       <input class="site-search__input" type="search" id="console-search" placeholder="Buscar emisora o canal"
         autocomplete="off" />
     </search>
+
+    <button class="install-button" type="button" id="install-button" hidden>
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3v12m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="1.9"
+          stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor"
+          stroke-width="1.9" stroke-linecap="round" />
+      </svg>
+      <span>Instalar app</span>
+    </button>
   </header>
 
   <main class="site-main" id="main-content" tabindex="-1">
     <section class="panel" id="panel-radio" role="tabpanel" aria-labelledby="tab-radio">
       <div class="radio-desk">
-        <div class="radio-player" id="radio-player" aria-label="Reproductor de radio">
+        <div class="radio-player" id="radio-player" aria-label="Reproductor de audio en directo">
           <div class="radio-player__empty" id="radio-player-empty">
             <svg class="icon icon--antenna" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
               focusable="false">
@@ -98,6 +100,7 @@
             <div class="radio-player__text">
               <p class="radio-player__title" id="radio-player-title"></p>
               <p class="radio-player__subtitle" id="radio-player-subtitle"></p>
+              <span class="radio-player__source" id="radio-player-source" hidden>TV · SOLO AUDIO</span>
             </div>
             <span class="live-badge radio-player__state" id="radio-player-state"></span>
 
@@ -148,7 +151,17 @@
           </div>
         </div>
 
-        <ul class="station-list" id="station-list"></ul>
+        <div class="list-pane">
+          <div class="list-toolbar">
+            <label class="visually-hidden" for="station-sort">Ordenar emisoras</label>
+            <select class="list-toolbar__select" id="station-sort">
+              <option value="default">Orden original</option>
+              <option value="az">A–Z</option>
+              <option value="category">Por categoría</option>
+            </select>
+          </div>
+          <ul class="station-list" id="station-list"></ul>
+        </div>
       </div>
       <noscript>
         <p class="panel__lead">Activa JavaScript para poder reproducir las emisoras en directo.</p>
@@ -176,6 +189,12 @@
             <span class="live-badge" id="video-state">
               <span class="live-badge__dot" aria-hidden="true"></span><span data-state-text>EN DIRECTO</span>
             </span>
+          </div>
+
+          <div class="video-stage__audio-only" id="video-audio-only" hidden>
+            <span class="video-stage__audio-logo" id="video-audio-logo" aria-hidden="true"></span>
+            <p class="video-stage__audio-name" id="video-audio-name"></p>
+            <p class="video-stage__audio-hint">Escuchando solo el audio</p>
           </div>
 
           <div class="video-controls" id="video-controls">
@@ -222,6 +241,17 @@
             <label class="visually-hidden" for="video-volume">Volumen del vídeo</label>
             <input class="volume-slider" type="range" id="video-volume" min="0" max="100" step="1" value="80" />
 
+            <button class="icon-button" type="button" id="video-audio-only-toggle" aria-pressed="false">
+              <svg class="icon icon--headphones" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                aria-hidden="true" focusable="false">
+                <path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="1.9"
+                  stroke-linecap="round" />
+                <rect x="3" y="13" width="3.5" height="6" rx="1.5" fill="currentColor" />
+                <rect x="17.5" y="13" width="3.5" height="6" rx="1.5" fill="currentColor" />
+              </svg>
+              <span class="visually-hidden" data-audio-label>Solo audio</span>
+            </button>
+
             <button class="icon-button" type="button" id="video-pip" hidden>
               <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
                 focusable="false">
@@ -252,10 +282,53 @@
           </div>
         </div>
 
-        <ul class="channel-list" id="channel-list"></ul>
+        <div class="list-pane">
+          <div class="list-toolbar">
+            <label class="visually-hidden" for="channel-sort">Ordenar canales</label>
+            <select class="list-toolbar__select" id="channel-sort">
+              <option value="default">Orden original</option>
+              <option value="az">A–Z</option>
+              <option value="category">Por categoría</option>
+            </select>
+          </div>
+          <ul class="channel-list" id="channel-list"></ul>
+        </div>
       </div>
     </section>
   </main>
+
+  <aside class="mini-player" id="mini-player" aria-label="Reproductor en directo" hidden>
+    <button class="mini-player__open" type="button" id="mini-player-open">
+      <span class="mini-player__logo" id="mini-player-logo" aria-hidden="true"></span>
+      <span class="mini-player__text">
+        <span class="mini-player__name" id="mini-player-name"></span>
+        <span class="mini-player__subtitle" id="mini-player-subtitle"></span>
+      </span>
+      <span class="live-badge mini-player__badge" id="mini-player-badge" aria-hidden="true"></span>
+      <span class="visually-hidden">Volver al reproductor</span>
+    </button>
+    <div class="mini-player__controls">
+      <button class="icon-button" type="button" id="mini-player-toggle">
+        <svg class="icon icon--play" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+          focusable="false" hidden>
+          <path d="M8 5.13v13.74a1 1 0 0 0 1.52.85l10.77-6.87a1 1 0 0 0 0-1.7L9.52 4.28A1 1 0 0 0 8 5.13Z"
+            fill="currentColor" />
+        </svg>
+        <svg class="icon icon--pause" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"
+          focusable="false">
+          <rect x="7" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+          <rect x="13.6" y="5" width="3.4" height="14" rx="1.2" fill="currentColor" />
+        </svg>
+        <span class="visually-hidden" data-toggle-label>Pausar</span>
+      </button>
+      <button class="icon-button" type="button" id="mini-player-stop">
+        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="6.5" y="6.5" width="11" height="11" rx="1.6" fill="currentColor" />
+        </svg>
+        <span class="visually-hidden">Detener</span>
+      </button>
+    </div>
+  </aside>
 
   <p class="visually-hidden" role="status" id="announcer"></p>
 </body>
